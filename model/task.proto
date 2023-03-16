@@ -13,10 +13,6 @@ message Task {
     google.protobuf.Timestamp DeletedAt = 6;
 }
 
-service Tasking{
-    rpc ListTasks(ListTasksRequest) returns (ListTasksResponse) {}
-}
-
 message ListTasksRequest {
   ListTasksRequestFilter filter = 1;
 }

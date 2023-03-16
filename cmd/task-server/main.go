@@ -2,19 +2,17 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/go-kratos/kratos/v2/log"
 	conf "qantas.com/task/internal/conf"
-	model "qantas.com/task/model"
 )
 
 var path = "../../configs/config.yaml"
 
 func main() {
-	var task model.Task
-	fmt.Println(task.Name)
 
 	c := config.New(
 		config.WithSource( // 初始化配置源
@@ -33,10 +31,17 @@ func main() {
 	}
 
 	fmt.Println(bc.Server.Http.Timeout)
-	// Get the corresponding value
-	// name, err := c.Value("server.http.timeout").String()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(name)
+
+	logger := log.With(log.NewStdLogger(os.Stdout))
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	if err != nil {
+		panic(err)
+	}
+
+	defer cleanup()
+
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
 }
