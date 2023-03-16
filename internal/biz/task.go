@@ -8,11 +8,11 @@ import (
 )
 
 type TaskRepo interface {
-	// Save(context.Context, *Greeter) (*Greeter, error)
+	Create(context.Context, *model.Task) (*model.Task, error)
 	// Update(context.Context, *Greeter) (*Greeter, error)
 	// FindByID(context.Context, int64) (*Greeter, error)
 	// ListByHello(context.Context, string) ([]*Greeter, error)
-	ListAll(context.Context) ([]*model.Task, error)
+	List(context.Context) ([]model.Task, error)
 }
 
 type TaskUsecase struct {
@@ -24,12 +24,12 @@ func NewTaskUsecase(repo TaskRepo, logger log.Logger) *TaskUsecase {
 	return &TaskUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
-// func (uc *TaskUsecase) CreateTask(ctx context.Context, t *Task) (*Task, error) {
-// 	uc.log.WithContext(ctx).Infof("CreateTask: %v", g.Hello)
-// 	return uc.repo.Save(ctx, g)
-// }
+func (uc *TaskUsecase) CreateTask(ctx context.Context, t *model.Task) (*model.Task, error) {
+	uc.log.WithContext(ctx).Infof("CreateTask: %v", t)
+	return uc.repo.Create(ctx, t)
+}
 
-func (uc *TaskUsecase) ListTasks(ctx context.Context) ([]*model.Task, error) {
+func (uc *TaskUsecase) ListTasks(ctx context.Context) ([]model.Task, error) {
 	uc.log.WithContext(ctx).Infof("ListTasks")
-	return uc.repo.ListAll(ctx)
+	return uc.repo.List(ctx)
 }

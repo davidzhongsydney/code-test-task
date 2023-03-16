@@ -15,10 +15,18 @@ func NewTaskService(uc *biz.TaskUsecase) *TaskService {
 	return &TaskService{uc: uc}
 }
 
-func (t *TaskService) ListTasks(ctx context.Context) ([]*model.Task, error) {
+func (t *TaskService) ListTasks(ctx context.Context) ([]model.Task, error) {
 	tasks, err := t.uc.ListTasks(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return tasks, nil
+}
+
+func (t *TaskService) CreateTask(ctx context.Context, task *model.Task) (*model.Task, error) {
+	task, err := t.uc.CreateTask(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }

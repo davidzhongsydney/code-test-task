@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -9,6 +10,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"qantas.com/task/internal/conf"
 	"qantas.com/task/internal/service"
+	"qantas.com/task/model"
 )
 
 type HTTPServer struct {
@@ -30,7 +32,25 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 	ctx := context.Background()
 
 	r.Get("/ListingTasks", func(w http.ResponseWriter, r *http.Request) {
-		taskSvc.ListTasks(ctx)
+		result, err := taskSvc.ListTasks(ctx)
+
+		if err != nil {
+
+		}
+
+		json.NewEncoder(w).Encode(result)
+	})
+
+	r.Post("/CreateTask", func(w http.ResponseWriter, r *http.Request) {
+		var task model.Task
+		json.NewDecoder(r.Body).Decode(&task)
+		result, err := taskSvc.CreateTask(ctx, &task)
+
+		if err != nil {
+
+		}
+
+		json.NewEncoder(w).Encode(result)
 	})
 
 	return &HTTPServer{router: r}
