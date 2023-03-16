@@ -1,16 +1,14 @@
 package model
 
-import (
-	"time"
-)
+import timestamp "github.com/golang/protobuf/ptypes/timestamp"
 
 type Task struct {
-	TaskID    uint64    `json:"TaskID,omitempty"`
-	Name      string    `json:"Name,omitempty"`
-	Content   string    `json:"Content,omitempty"`
-	CreatedAt time.Time `json:"CreatedAt,omitempty"`
-	UpdatedAt time.Time `json:"UpdatedAt,omitempty"`
-	DeletedAt time.Time `json:"DeletedAt,omitempty"`
+	TaskID    uint64               `json:"TaskID,omitempty"`
+	Name      string               `json:"Name,omitempty"`
+	Content   string               `json:"Content,omitempty"`
+	CreatedAt *timestamp.Timestamp `json:"CreatedAt,omitempty"`
+	UpdatedAt *timestamp.Timestamp `json:"UpdatedAt,omitempty"`
+	DeletedAt *timestamp.Timestamp `json:"DeletedAt,omitempty"`
 }
 
 func (x *Task) GetTaskID() uint64 {
@@ -34,23 +32,23 @@ func (x *Task) GetContent() string {
 	return ""
 }
 
-func (x *Task) GetCreatedAt() time.Time {
+func (x *Task) GetCreatedAt() *timestamp.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return time.Time{}
+	return nil
 }
 
-func (x *Task) GetUpdatedAt() time.Time {
+func (x *Task) GetUpdatedAt() *timestamp.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
-	return time.Time{}
+	return nil
 }
 
-func (x *Task) GetDeletedAt() time.Time {
+func (x *Task) GetDeletedAt() *timestamp.Timestamp {
 	if x != nil {
 		return x.DeletedAt
 	}
-	return time.Time{}
+	return nil
 }

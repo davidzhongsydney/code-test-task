@@ -15,7 +15,7 @@ var path = "../../configs/config.yaml"
 func main() {
 
 	c := config.New(
-		config.WithSource( // 初始化配置源
+		config.WithSource(
 			file.NewSource(path),
 		),
 	)

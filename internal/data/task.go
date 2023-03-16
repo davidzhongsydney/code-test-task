@@ -2,9 +2,10 @@ package data
 
 import (
 	"context"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"golang.org/x/exp/maps"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/model"
 )
@@ -23,15 +24,73 @@ func NewTaskRepo(data *Data, logger log.Logger) biz.TaskRepo {
 }
 
 func (r *taskRepo) List(context.Context) ([]model.Task, error) {
-	return r.data.tasks, nil
+	return maps.Values(r.data.tasks), nil
+}
+
+func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.Task, error) {
+	val, ok := r.data.tasks[id]
+
+	// Task not exist
+	if !ok {
+
+	}
+
+	// Task has been deleted
+	if val.DeletedAt != nil {
+
+	}
+
+	return &val, nil
 }
 
 func (r *taskRepo) Create(ctx context.Context, task *model.Task) (*model.Task, error) {
-	task.TaskID = r.index
 	r.index++
+	task.TaskID = r.index
+	task.CreatedAt = timestamppb.Now()
+	task.UpdatedAt = nil
+	task.DeletedAt = nil
 
-	task.CreatedAt = time.Now()
-
-	r.data.tasks = append(r.data.tasks, *task)
+	r.data.tasks[task.TaskID] = *task
 	return task, nil
+}
+
+func (r *taskRepo) Update(ctx context.Context, task *model.Task) (*model.Task, error) {
+
+	val, ok := r.data.tasks[task.TaskID]
+
+	// Task not exist
+	if !ok {
+
+	}
+
+	// Task has been deleted
+	if val.DeletedAt != nil {
+
+	}
+
+	task.CreatedAt = val.CreatedAt
+	task.UpdatedAt = timestamppb.Now()
+
+	r.data.tasks[task.TaskID] = *task
+
+	return task, nil
+}
+
+func (r *taskRepo) Delete(ctx context.Context, id uint64) error {
+	val, ok := r.data.tasks[id]
+
+	// Task not exist
+	if !ok {
+
+	}
+
+	// Task has been deleted
+	if val.DeletedAt != nil {
+
+	}
+
+	val.DeletedAt = timestamppb.Now()
+	r.data.tasks[id] = val
+
+	return nil
 }

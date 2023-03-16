@@ -9,9 +9,9 @@ import (
 
 type TaskRepo interface {
 	Create(context.Context, *model.Task) (*model.Task, error)
-	// Update(context.Context, *Greeter) (*Greeter, error)
-	// FindByID(context.Context, int64) (*Greeter, error)
-	// ListByHello(context.Context, string) ([]*Greeter, error)
+	Get(context.Context, uint64) (*model.Task, error)
+	Update(context.Context, *model.Task) (*model.Task, error)
+	Delete(context.Context, uint64) error
 	List(context.Context) ([]model.Task, error)
 }
 
@@ -25,8 +25,23 @@ func NewTaskUsecase(repo TaskRepo, logger log.Logger) *TaskUsecase {
 }
 
 func (uc *TaskUsecase) CreateTask(ctx context.Context, t *model.Task) (*model.Task, error) {
-	uc.log.WithContext(ctx).Infof("CreateTask: %v", t)
+	uc.log.WithContext(ctx).Infof("CreateTask: %v", *t)
 	return uc.repo.Create(ctx, t)
+}
+
+func (uc *TaskUsecase) GetTaskByID(ctx context.Context, id uint64) (*model.Task, error) {
+	uc.log.WithContext(ctx).Infof("GetTaskByID: %v", id)
+	return uc.repo.Get(ctx, id)
+}
+
+func (uc *TaskUsecase) DeleteTaskByID(ctx context.Context, id uint64) error {
+	uc.log.WithContext(ctx).Infof("DeleteTaskByID: %v", id)
+	return uc.repo.Delete(ctx, id)
+}
+
+func (uc *TaskUsecase) UpdateTaskByID(ctx context.Context, t *model.Task) (*model.Task, error) {
+	uc.log.WithContext(ctx).Infof("UpdateTaskByID: %v", *t)
+	return uc.repo.Update(ctx, t)
 }
 
 func (uc *TaskUsecase) ListTasks(ctx context.Context) ([]model.Task, error) {

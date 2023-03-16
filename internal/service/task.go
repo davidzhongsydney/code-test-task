@@ -30,3 +30,27 @@ func (t *TaskService) CreateTask(ctx context.Context, task *model.Task) (*model.
 	}
 	return task, nil
 }
+
+func (t *TaskService) GetTaskByID(ctx context.Context, id uint64) (*model.Task, error) {
+	task, err := t.uc.GetTaskByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+func (t *TaskService) UpdateTaskByID(ctx context.Context, task *model.Task) (*model.Task, error) {
+	task, err := t.uc.UpdateTaskByID(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+func (t *TaskService) DeleteTaskByID(ctx context.Context, id uint64) error {
+	err := t.uc.DeleteTaskByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

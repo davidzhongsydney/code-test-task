@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
@@ -51,6 +52,44 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		}
 
 		json.NewEncoder(w).Encode(result)
+	})
+
+	r.Get("/GetTaskById/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+
+		id, _ := strconv.ParseUint(chi.URLParam(r, "id"), 0, 64)
+
+		result, err := taskSvc.GetTaskByID(ctx, id)
+
+		if err != nil {
+
+		}
+
+		json.NewEncoder(w).Encode(result)
+	})
+
+	r.Put("/UpdateTaskById", func(w http.ResponseWriter, r *http.Request) {
+		var task model.Task
+		json.NewDecoder(r.Body).Decode(&task)
+		result, err := taskSvc.UpdateTaskByID(ctx, &task)
+
+		if err != nil {
+
+		}
+
+		json.NewEncoder(w).Encode(result)
+	})
+
+	r.Delete("/DeleteTaskById/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+
+		id, _ := strconv.ParseUint(chi.URLParam(r, "id"), 0, 64)
+
+		err := taskSvc.DeleteTaskByID(ctx, id)
+
+		if err != nil {
+
+		}
+
+		json.NewEncoder(w).Encode("Delete successful")
 	})
 
 	return &HTTPServer{router: r}
