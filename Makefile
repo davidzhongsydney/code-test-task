@@ -23,6 +23,7 @@ model:
 	protoc --proto_path=./model \
 	       --proto_path=./third_party \
  	       --go_out=paths=source_relative:./model \
+		   --go-errors_out=paths=source_relative:./model \
 	       $(MODEL_PROTO_FILES)
 
 .PHONY: config
@@ -32,3 +33,9 @@ config:
 	       --proto_path=./third_party \
  	       --go_out=paths=source_relative:./internal \
 	       $(INTERNAL_PROTO_FILES)
+
+.PHONY: wire
+# generate internal proto
+wire:
+	cd cmd/task-server;  \
+	go run github.com/google/wire/cmd/wire

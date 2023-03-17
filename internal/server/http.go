@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-kratos/kratos/v2/log"
 	"qantas.com/task/internal/conf"
+	"qantas.com/task/internal/errors"
 	"qantas.com/task/internal/service"
 	"qantas.com/task/model"
 )
@@ -36,7 +37,8 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		result, err := taskSvc.ListTasks(ctx)
 
 		if err != nil {
-
+			json.NewEncoder(w).Encode(errors.FromError(err))
+			return
 		}
 
 		json.NewEncoder(w).Encode(result)
@@ -48,7 +50,8 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		result, err := taskSvc.CreateTask(ctx, &task)
 
 		if err != nil {
-
+			json.NewEncoder(w).Encode(errors.FromError(err))
+			return
 		}
 
 		json.NewEncoder(w).Encode(result)
@@ -61,7 +64,8 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		result, err := taskSvc.GetTaskByID(ctx, id)
 
 		if err != nil {
-
+			json.NewEncoder(w).Encode(errors.FromError(err))
+			return
 		}
 
 		json.NewEncoder(w).Encode(result)
@@ -73,7 +77,8 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		result, err := taskSvc.UpdateTaskByID(ctx, &task)
 
 		if err != nil {
-
+			json.NewEncoder(w).Encode(errors.FromError(err))
+			return
 		}
 
 		json.NewEncoder(w).Encode(result)
@@ -86,7 +91,8 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		err := taskSvc.DeleteTaskByID(ctx, id)
 
 		if err != nil {
-
+			json.NewEncoder(w).Encode(errors.FromError(err))
+			return
 		}
 
 		json.NewEncoder(w).Encode("Delete successful")

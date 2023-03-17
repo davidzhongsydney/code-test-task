@@ -7,6 +7,7 @@ import (
 	"golang.org/x/exp/maps"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
+	"qantas.com/task/internal/errors"
 	"qantas.com/task/model"
 	"robpike.io/filter"
 )
@@ -38,12 +39,12 @@ func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.T_Task, error) {
 
 	// Task not exist
 	if !ok {
-
+		return nil, model.ErrorTaskNotFound(string(errors.TASK_NOT_EXIST))
 	}
 
 	// Task has been deleted
 	if val.DeletedAt != nil {
-
+		return nil, model.ErrorTaskNotFound(string(errors.TASK_DELETED))
 	}
 
 	return &val, nil
