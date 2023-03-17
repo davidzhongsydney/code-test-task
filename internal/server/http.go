@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-kratos/kratos/v2/log"
 	"qantas.com/task/internal/conf"
-	"qantas.com/task/internal/errors"
+	"qantas.com/task/internal/encoder"
 	"qantas.com/task/internal/service"
 	"qantas.com/task/model"
 )
@@ -37,12 +37,13 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 	r.Get("/ListingTasks", func(w http.ResponseWriter, r *http.Request) {
 		result, err := taskSvc.ListTasks(ctx)
 
+		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
-			json.NewEncoder(w).Encode(errors.FromError(err))
+			json.NewEncoder(w).Encode(encoder.FromError(err))
 			return
 		}
 
-		json.NewEncoder(w).Encode(result)
+		json.NewEncoder(w).Encode(encoder.FromResponse(result))
 	})
 
 	r.Post("/CreateTask", func(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +51,9 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		json.NewDecoder(r.Body).Decode(&task)
 		result, err := taskSvc.CreateTask(ctx, &task)
 
+		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
-			json.NewEncoder(w).Encode(errors.FromError(err))
+			json.NewEncoder(w).Encode(encoder.FromError(err))
 			return
 		}
 
@@ -64,12 +66,13 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 
 		result, err := taskSvc.GetTaskByID(ctx, id)
 
+		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
-			json.NewEncoder(w).Encode(errors.FromError(err))
+			json.NewEncoder(w).Encode(encoder.FromError(err))
 			return
 		}
 
-		json.NewEncoder(w).Encode(result)
+		json.NewEncoder(w).Encode(encoder.FromResponse(result))
 	})
 
 	r.Put("/UpdateTaskById", func(w http.ResponseWriter, r *http.Request) {
@@ -77,12 +80,13 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		json.NewDecoder(r.Body).Decode(&task)
 		result, err := taskSvc.UpdateTaskByID(ctx, &task)
 
+		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
-			json.NewEncoder(w).Encode(errors.FromError(err))
+			json.NewEncoder(w).Encode(encoder.FromError(err))
 			return
 		}
 
-		json.NewEncoder(w).Encode(result)
+		json.NewEncoder(w).Encode(encoder.FromResponse(result))
 	})
 
 	r.Delete("/DeleteTaskById/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
@@ -91,12 +95,13 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 
 		err := taskSvc.DeleteTaskByID(ctx, id)
 
+		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
-			json.NewEncoder(w).Encode(errors.FromError(err))
+			json.NewEncoder(w).Encode(encoder.FromError(err))
 			return
 		}
 
-		json.NewEncoder(w).Encode("Delete successful")
+		json.NewEncoder(w).Encode(encoder.FromResponse(nil))
 	})
 
 	return &HTTPServer{router: r, conf: c}

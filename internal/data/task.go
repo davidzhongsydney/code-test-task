@@ -7,7 +7,7 @@ import (
 	"golang.org/x/exp/maps"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
-	"qantas.com/task/internal/errors"
+	"qantas.com/task/internal/encoder"
 	"qantas.com/task/model"
 	"robpike.io/filter"
 )
@@ -39,12 +39,12 @@ func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.T_Task, error) {
 
 	// Task not exist
 	if !ok {
-		return nil, model.ErrorTaskNotFound(string(errors.TASK_NOT_EXIST))
+		return nil, model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST))
 	}
 
 	// Task has been deleted
 	if val.DeletedAt != nil {
-		return nil, model.ErrorTaskNotFound(string(errors.TASK_DELETED))
+		return nil, model.ErrorTaskNotFound(string(encoder.TASK_DELETED))
 	}
 
 	return &val, nil
@@ -66,12 +66,12 @@ func (r *taskRepo) Update(ctx context.Context, task *model.Task) (*model.T_Task,
 
 	// Task not exist
 	if !ok {
-
+		return nil, model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST))
 	}
 
 	// Task has been deleted
 	if val.DeletedAt != nil {
-
+		return nil, model.ErrorTaskNotFound(string(encoder.TASK_DELETED))
 	}
 
 	val.Task = *task
@@ -87,12 +87,12 @@ func (r *taskRepo) Delete(ctx context.Context, id uint64) error {
 
 	// Task not exist
 	if !ok {
-
+		return model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST))
 	}
 
 	// Task has been deleted
 	if val.DeletedAt != nil {
-
+		return model.ErrorTaskNotFound(string(encoder.TASK_DELETED))
 	}
 
 	val.DeletedAt = timestamppb.Now()

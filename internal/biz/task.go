@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"qantas.com/task/internal/errors"
+	"qantas.com/task/internal/encoder"
 	"qantas.com/task/model"
 )
 
@@ -33,7 +33,7 @@ func (uc *TaskUsecase) CreateTask(ctx context.Context, t *model.Task) (*model.T_
 func (uc *TaskUsecase) GetTaskByID(ctx context.Context, id uint64) (*model.T_Task, error) {
 	uc.log.WithContext(ctx).Infof("GetTaskByID: %v", id)
 	if id == 0 {
-		return nil, model.ErrorTaskIdUnspecified(string(errors.TASK_ID_NOT_SPECIFIED))
+		return nil, model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED))
 	}
 
 	return uc.repo.Get(ctx, id)
@@ -42,7 +42,7 @@ func (uc *TaskUsecase) GetTaskByID(ctx context.Context, id uint64) (*model.T_Tas
 func (uc *TaskUsecase) DeleteTaskByID(ctx context.Context, id uint64) error {
 	uc.log.WithContext(ctx).Infof("DeleteTaskByID: %v", id)
 	if id == 0 {
-		return model.ErrorTaskIdUnspecified(string(errors.TASK_ID_NOT_SPECIFIED))
+		return model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED))
 	}
 	return uc.repo.Delete(ctx, id)
 }
@@ -50,7 +50,7 @@ func (uc *TaskUsecase) DeleteTaskByID(ctx context.Context, id uint64) error {
 func (uc *TaskUsecase) UpdateTaskByID(ctx context.Context, t *model.Task) (*model.T_Task, error) {
 	uc.log.WithContext(ctx).Infof("UpdateTaskByID: %v", *t)
 	if t.TaskID == 0 {
-		return nil, model.ErrorTaskIdUnspecified(string(errors.TASK_ID_NOT_SPECIFIED))
+		return nil, model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED))
 	}
 	return uc.repo.Update(ctx, t)
 }
