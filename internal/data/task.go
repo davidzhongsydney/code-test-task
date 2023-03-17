@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/model"
+	"robpike.io/filter"
 )
 
 type taskRepo struct {
@@ -23,11 +24,16 @@ func NewTaskRepo(data *Data, logger log.Logger) biz.TaskRepo {
 	}
 }
 
-func (r *taskRepo) List(context.Context) ([]model.Task, error) {
-	return maps.Values(r.data.tasks), nil
+func (r *taskRepo) List(context.Context) ([]model.T_Task, error) {
+	tasks := maps.Values(r.data.tasks)
+	result := filter.Choose(tasks, func(task model.T_Task) bool {
+		return task.DeletedAt == nil
+	}).([]model.T_Task)
+
+	return result, nil
 }
 
-func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.Task, error) {
+func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.T_Task, error) {
 	val, ok := r.data.tasks[id]
 
 	// Task not exist
@@ -43,18 +49,17 @@ func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.Task, error) {
 	return &val, nil
 }
 
-func (r *taskRepo) Create(ctx context.Context, task *model.Task) (*model.Task, error) {
+func (r *taskRepo) Create(ctx context.Context, task *model.Task) (*model.T_Task, error) {
 	r.index++
 	task.TaskID = r.index
-	task.CreatedAt = timestamppb.Now()
-	task.UpdatedAt = nil
-	task.DeletedAt = nil
 
-	r.data.tasks[task.TaskID] = *task
-	return task, nil
+	newEntry := model.T_Task{Task: *task, T_Internal: model.T_Internal{CreatedAt: timestamppb.Now()}}
+
+	r.data.tasks[task.TaskID] = newEntry
+	return &newEntry, nil
 }
 
-func (r *taskRepo) Update(ctx context.Context, task *model.Task) (*model.Task, error) {
+func (r *taskRepo) Update(ctx context.Context, task *model.Task) (*model.T_Task, error) {
 
 	val, ok := r.data.tasks[task.TaskID]
 
@@ -68,12 +73,12 @@ func (r *taskRepo) Update(ctx context.Context, task *model.Task) (*model.Task, e
 
 	}
 
-	task.CreatedAt = val.CreatedAt
-	task.UpdatedAt = timestamppb.Now()
+	val.Task = *task
+	val.T_Internal.UpdatedAt = timestamppb.Now()
 
-	r.data.tasks[task.TaskID] = *task
+	r.data.tasks[task.TaskID] = val
 
-	return task, nil
+	return &val, nil
 }
 
 func (r *taskRepo) Delete(ctx context.Context, id uint64) error {

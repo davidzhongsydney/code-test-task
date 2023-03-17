@@ -10,12 +10,12 @@ import (
 var ProviderSet = wire.NewSet(NewData, NewTaskRepo)
 
 type Data struct {
-	tasks map[uint64]model.Task
+	tasks map[uint64]model.T_Task
 }
 
 func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{tasks: make(map[uint64]model.Task)}, cleanup, nil
+	return &Data{tasks: make(map[uint64]model.T_Task)}, cleanup, nil
 }

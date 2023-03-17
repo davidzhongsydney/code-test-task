@@ -15,7 +15,7 @@ func NewTaskService(uc *biz.TaskUsecase) *TaskService {
 	return &TaskService{uc: uc}
 }
 
-func (t *TaskService) ListTasks(ctx context.Context) ([]model.Task, error) {
+func (t *TaskService) ListTasks(ctx context.Context) ([]model.T_Task, error) {
 	tasks, err := t.uc.ListTasks(ctx)
 	if err != nil {
 		return nil, err
@@ -23,15 +23,15 @@ func (t *TaskService) ListTasks(ctx context.Context) ([]model.Task, error) {
 	return tasks, nil
 }
 
-func (t *TaskService) CreateTask(ctx context.Context, task *model.Task) (*model.Task, error) {
-	task, err := t.uc.CreateTask(ctx, task)
+func (t *TaskService) CreateTask(ctx context.Context, task *model.Task) (*model.T_Task, error) {
+	taskTable, err := t.uc.CreateTask(ctx, task)
 	if err != nil {
 		return nil, err
 	}
-	return task, nil
+	return taskTable, nil
 }
 
-func (t *TaskService) GetTaskByID(ctx context.Context, id uint64) (*model.Task, error) {
+func (t *TaskService) GetTaskByID(ctx context.Context, id uint64) (*model.T_Task, error) {
 	task, err := t.uc.GetTaskByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -39,12 +39,12 @@ func (t *TaskService) GetTaskByID(ctx context.Context, id uint64) (*model.Task, 
 	return task, nil
 }
 
-func (t *TaskService) UpdateTaskByID(ctx context.Context, task *model.Task) (*model.Task, error) {
-	task, err := t.uc.UpdateTaskByID(ctx, task)
+func (t *TaskService) UpdateTaskByID(ctx context.Context, task *model.Task) (*model.T_Task, error) {
+	t_task, err := t.uc.UpdateTaskByID(ctx, task)
 	if err != nil {
 		return nil, err
 	}
-	return task, nil
+	return t_task, nil
 }
 
 func (t *TaskService) DeleteTaskByID(ctx context.Context, id uint64) error {
