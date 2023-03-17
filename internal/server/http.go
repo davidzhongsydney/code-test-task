@@ -17,6 +17,7 @@ import (
 
 type HTTPServer struct {
 	router *chi.Mux
+	conf   *conf.Server
 }
 
 func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logger) Server {
@@ -29,7 +30,7 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	// r.Use(middleware.Timeout(c.Http.Timeout.AsDuration()))
+	r.Use(middleware.Timeout(c.Http.Timeout.AsDuration()))
 
 	ctx := context.Background()
 
@@ -98,11 +99,11 @@ func NewHTTPServer(c *conf.Server, taskSvc *service.TaskService, logger log.Logg
 		json.NewEncoder(w).Encode("Delete successful")
 	})
 
-	return &HTTPServer{router: r}
+	return &HTTPServer{router: r, conf: c}
 }
 
 func (s *HTTPServer) Run() error {
-	err := http.ListenAndServe(":8000", s.router)
+	err := http.ListenAndServe(s.conf.Http.Addr, s.router)
 
 	if err != nil {
 		return err

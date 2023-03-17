@@ -1,6 +1,6 @@
 GOHOSTOS:=$(shell go env GOHOSTOS)
 GOPATH:=$(shell go env GOPATH)
-VERSION=$(shell git describe --tags --always)
+
 
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.
@@ -39,3 +39,9 @@ config:
 wire:
 	cd cmd/task-server;  \
 	go run github.com/google/wire/cmd/wire
+
+.PHONY: build
+# build
+build:
+	mkdir -p bin/; \
+	go build -o ./bin/ ./...

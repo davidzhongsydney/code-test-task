@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -10,16 +11,26 @@ import (
 	conf "qantas.com/task/internal/conf"
 )
 
-var path = "../../configs/config.yaml"
+var (
+	flagconf string
+)
+
+func init() {
+	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+}
 
 func main() {
 
+	flag.Parse()
+
+	fmt.Println("flagconf: ", flagconf)
+
 	c := config.New(
 		config.WithSource(
-			file.NewSource(path),
+			file.NewSource(flagconf),
 		),
 	)
-	// load config source
+
 	if err := c.Load(); err != nil {
 		log.Fatal(err)
 	}
