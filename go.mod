@@ -8,10 +8,8 @@ require (
 )
 
 require (
-	github.com/google/subcommands v1.0.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/tools v0.2.0 // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	google.golang.org/grpc v1.46.2 // indirect
 )
@@ -23,8 +21,9 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/wire v0.5.0
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 	golang.org/x/sys v0.5.0 // indirect
 	google.golang.org/protobuf v1.29.1
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

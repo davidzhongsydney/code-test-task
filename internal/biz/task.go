@@ -14,6 +14,7 @@ type TaskRepo interface {
 	Update(context.Context, *model.Task) (*model.T_Task, error)
 	Delete(context.Context, uint64) error
 	List(context.Context) ([]model.T_Task, error)
+	Empty(context.Context) error
 }
 
 type TaskUsecase struct {

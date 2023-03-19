@@ -100,3 +100,10 @@ func (r *taskRepo) Delete(ctx context.Context, id uint64) error {
 
 	return nil
 }
+
+func (r *taskRepo) Empty(ctx context.Context) error {
+	r.data.tasks = make(map[uint64]model.T_Task)
+	r.index = 0
+
+	return nil
+}
