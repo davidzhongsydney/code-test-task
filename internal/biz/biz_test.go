@@ -21,14 +21,12 @@ func (uts *BizTestSuite) SetupTest() {
 	logger := log.With(log.NewStdLogger(os.Stdout))
 
 	uts.taskRepoMock = taskRepoMock
-	uts.taskUseCase = biz.NewTaskUsecase(&taskRepoMock, logger)
 	uts.context = context.Background()
 	uts.logger = logger
 }
 
 type BizTestSuite struct {
 	suite.Suite
-	taskUseCase  *biz.TaskUsecase
 	taskRepoMock mocks.TaskRepo
 	context      context.Context
 	logger       log.Logger
