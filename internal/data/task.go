@@ -39,6 +39,7 @@ func (r *taskRepo) Get(ctx context.Context, id uint64) (*model.T_Task, error) {
 
 	// Task not exist
 	if !ok {
+		r.log.WithContext(ctx).Errorf("taskRepo: Get - Task ID not specified")
 		return nil, model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST))
 	}
 

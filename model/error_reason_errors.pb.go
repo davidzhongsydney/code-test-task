@@ -34,3 +34,15 @@ func IsTaskNotFound(err error) bool {
 func ErrorTaskNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, ErrorReason_TASK_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
+
+func IsTaskCreationError(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_TASK_CREATION_ERROR.String() && e.Code == 500
+}
+
+func ErrorTaskCreationError(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_TASK_CREATION_ERROR.String(), fmt.Sprintf(format, args...))
+}

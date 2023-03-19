@@ -27,13 +27,14 @@ func NewTaskUsecase(repo TaskRepo, logger log.Logger) *TaskUsecase {
 }
 
 func (uc *TaskUsecase) CreateTask(ctx context.Context, t *model.Task) (*model.T_Task, error) {
-	uc.log.WithContext(ctx).Infof("CreateTask: %v", *t)
+	uc.log.WithContext(ctx).Infof("TaskUsecase: CreateTask: %v", *t)
 	return uc.repo.Create(ctx, t)
 }
 
 func (uc *TaskUsecase) GetTaskByID(ctx context.Context, id uint64) (*model.T_Task, error) {
-	uc.log.WithContext(ctx).Infof("GetTaskByID: %v", id)
+	uc.log.WithContext(ctx).Infof("TaskUsecase: GetTaskByID: %v", id)
 	if id == 0 {
+		uc.log.WithContext(ctx).Error("TaskUsecase: GetTaskByID - Task ID not specified")
 		return nil, model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED))
 	}
 
@@ -41,22 +42,24 @@ func (uc *TaskUsecase) GetTaskByID(ctx context.Context, id uint64) (*model.T_Tas
 }
 
 func (uc *TaskUsecase) DeleteTaskByID(ctx context.Context, id uint64) error {
-	uc.log.WithContext(ctx).Infof("DeleteTaskByID: %v", id)
+	uc.log.WithContext(ctx).Infof("TaskUsecase: DeleteTaskByID: %v", id)
 	if id == 0 {
+		uc.log.WithContext(ctx).Error("TaskUsecase: DeleteTaskByID - Task ID not specified")
 		return model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED))
 	}
 	return uc.repo.Delete(ctx, id)
 }
 
 func (uc *TaskUsecase) UpdateTaskByID(ctx context.Context, t *model.Task) (*model.T_Task, error) {
-	uc.log.WithContext(ctx).Infof("UpdateTaskByID: %v", *t)
+	uc.log.WithContext(ctx).Infof("TaskUsecase: UpdateTaskByID: %v", *t)
 	if t.TaskID == 0 {
+		uc.log.WithContext(ctx).Error("TaskUsecase: UpdateTaskByID - Task ID not specified")
 		return nil, model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED))
 	}
 	return uc.repo.Update(ctx, t)
 }
 
 func (uc *TaskUsecase) ListTasks(ctx context.Context) ([]model.T_Task, error) {
-	uc.log.WithContext(ctx).Infof("ListTasks")
+	uc.log.WithContext(ctx).Infof("TaskUsecase: ListTasks")
 	return uc.repo.List(ctx)
 }

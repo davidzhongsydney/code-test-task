@@ -9,4 +9,5 @@ enum ErrorReason {
   option (errors.default_code) = 500;
   TASK_ID_UNSPECIFIED = 0 [(errors.code) = 400];
   TASK_NOT_FOUND = 1 [(errors.code) = 404];
+  TASK_CREATION_ERROR = 2 [(errors.code) = 500];
 }

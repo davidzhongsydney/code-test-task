@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	errors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
@@ -34,13 +35,13 @@ func Test_INT_NewTaskRepo_Success(t *testing.T) {
 	requires.Equal("*data.taskRepo", fmt.Sprint(reflect.TypeOf(taskRepo)))
 }
 
-type INT_TaskTestSuite struct {
+type DataSourceTestSuite struct {
 	suite.Suite
 	taskRepo biz.TaskRepo
 	context  context.Context
 }
 
-func (s *INT_TaskTestSuite) SetupSuite() {
+func (s *DataSourceTestSuite) SetupSuite() {
 	logger := log.With(log.NewStdLogger(os.Stdout))
 	conf := conf.Data{}
 	dataRepo, _, err := data.NewData(&conf, logger)
@@ -53,15 +54,15 @@ func (s *INT_TaskTestSuite) SetupSuite() {
 	s.context = context.Background()
 }
 
-func (s *INT_TaskTestSuite) TearDownTest() {
+func (s *DataSourceTestSuite) TearDownTest() {
 	s.taskRepo.Empty(s.context)
 }
 
 func TestTaskSuite(t *testing.T) {
-	suite.Run(t, new(INT_TaskTestSuite))
+	suite.Run(t, new(DataSourceTestSuite))
 }
 
-func (s *INT_TaskTestSuite) Test_AddTask() {
+func (s *DataSourceTestSuite) Test_AddTask() {
 	// Create first task
 	t1 := model.Task{Name: "user name 1", Content: "content text 1"}
 
@@ -69,9 +70,7 @@ func (s *INT_TaskTestSuite) Test_AddTask() {
 	st, err := s.taskRepo.Create(s.context, &t1)
 	endTime := time.Now()
 
-	if err != nil {
-		s.FailNow("unable to create a task in database.", err.Error())
-	}
+	s.Require().Nil(err)
 
 	creationTime := st.CreatedAt.AsTime()
 	var emptyTimeStamp *timestamp.Timestamp
@@ -86,24 +85,20 @@ func (s *INT_TaskTestSuite) Test_AddTask() {
 	// Create second task
 	t2 := model.Task{TaskID: 5, Name: "user name 2", Content: "content text 2"}
 	st, err = s.taskRepo.Create(s.context, &t2)
-	if err != nil {
-		s.FailNow("unable to create a task in database.", err.Error())
-	}
+	s.Require().Nil(err)
 
 	s.Require().Equal(uint64(2), st.TaskID)
 	s.Require().Equal("user name 2", st.Name)
 	s.Require().Equal("content text 2", st.Content)
 }
 
-func (s *INT_TaskTestSuite) Test_GetTask_Success() {
+func (s *DataSourceTestSuite) Test_GetTask_Success() {
 	// Create task
 	t1 := model.Task{Name: "user name 1", Content: "content text 1"}
 	startTime := time.Now()
 	_, err := s.taskRepo.Create(s.context, &t1)
 	endTime := time.Now()
-	if err != nil {
-		s.FailNow("unable to create a task in database.", err.Error())
-	}
+	s.Require().Nil(err)
 
 	// Get task
 	st, err := s.taskRepo.Get(s.context, 1)
@@ -120,10 +115,13 @@ func (s *INT_TaskTestSuite) Test_GetTask_Success() {
 	s.Require().Equal(emptyTimeStamp, st.DeletedAt)
 }
 
-func (s *INT_TaskTestSuite) Test_GetTask_TaskNotFound() {
+func (s *DataSourceTestSuite) Test_GetTask_TaskNotFound() {
+	se := new(errors.Error)
+
 	// Query nonexistent task
 	st, err := s.taskRepo.Get(s.context, 1)
-	s.Require().EqualError(err, "error: code = 404 reason = TASK_NOT_FOUND message = task does not exist metadata = map[] cause = <nil>")
+	s.Require().True(errors.As(err, &se))
+	s.Require().True(model.IsTaskNotFound(se))
 	s.Require().Empty(st)
 
 	// Query a deleted task
@@ -135,17 +133,16 @@ func (s *INT_TaskTestSuite) Test_GetTask_TaskNotFound() {
 	s.Require().Empty(err)
 
 	st, err = s.taskRepo.Get(s.context, 1)
-	s.Require().EqualError(err, "error: code = 404 reason = TASK_NOT_FOUND message = task has been logically deleted metadata = map[] cause = <nil>")
+	s.Require().True(errors.As(err, &se))
+	s.Require().True(model.IsTaskNotFound(se))
 	s.Require().Empty(st)
 }
 
-func (s *INT_TaskTestSuite) Test_UpdateTask_Success() {
+func (s *DataSourceTestSuite) Test_UpdateTask_Success() {
 	// Create task
 	t := model.Task{Name: "user name 1", Content: "content text 1"}
 	st, err := s.taskRepo.Create(s.context, &t)
-	if err != nil {
-		s.FailNow("unable to create a task in database.", err.Error())
-	}
+	s.Require().Nil(err)
 
 	// Update a task
 	tt := model.Task{TaskID: 1, Name: "user name 2", Content: "content text 2"}
@@ -165,12 +162,15 @@ func (s *INT_TaskTestSuite) Test_UpdateTask_Success() {
 	s.Require().Equal(emptyTimeStamp, ut.DeletedAt)
 }
 
-func (s *INT_TaskTestSuite) Test_UpdateTask_TaskNotFound() {
+func (s *DataSourceTestSuite) Test_UpdateTask_TaskNotFound() {
+	se := new(errors.Error)
+
 	// Update nonexistent task
 	tt := model.Task{TaskID: 0, Name: "user name 2", Content: "content text 2"}
 	ut, err := s.taskRepo.Update(s.context, &tt)
 	s.Require().Empty(ut)
-	s.Require().EqualError(err, "error: code = 404 reason = TASK_NOT_FOUND message = task does not exist metadata = map[] cause = <nil>")
+	s.Require().True(errors.As(err, &se))
+	s.Require().True(model.IsTaskNotFound(se))
 
 	// Update a deleted task
 	t1 := model.Task{Name: "user name 1", Content: "content text 1"}
@@ -183,26 +183,28 @@ func (s *INT_TaskTestSuite) Test_UpdateTask_TaskNotFound() {
 	tt = model.Task{TaskID: 1, Name: "user name 2", Content: "content text 2"}
 	ut, err = s.taskRepo.Update(s.context, &tt)
 	s.Require().Empty(ut)
-	s.Require().EqualError(err, "error: code = 404 reason = TASK_NOT_FOUND message = task has been logically deleted metadata = map[] cause = <nil>")
+	s.Require().True(errors.As(err, &se))
+	s.Require().True(model.IsTaskNotFound(se))
 }
 
-func (s *INT_TaskTestSuite) Test_DeleteTask_Success() {
+func (s *DataSourceTestSuite) Test_DeleteTask_Success() {
 	// Create task
 	t1 := model.Task{Name: "user name 1", Content: "content text 1"}
 	_, err := s.taskRepo.Create(s.context, &t1)
-	if err != nil {
-		s.FailNow("unable to create a task in database.", err.Error())
-	}
+	s.Require().Nil(err)
 
 	// Delete a task
 	err = s.taskRepo.Delete(s.context, 1)
 	s.Require().Empty(err)
 }
 
-func (s *INT_TaskTestSuite) Test_DeleteTask_TaskNotFound() {
+func (s *DataSourceTestSuite) Test_DeleteTask_TaskNotFound() {
+	se := new(errors.Error)
+
 	// Delete nonexistent task
 	err := s.taskRepo.Delete(s.context, 1)
-	s.Require().EqualError(err, "error: code = 404 reason = TASK_NOT_FOUND message = task does not exist metadata = map[] cause = <nil>")
+	s.Require().True(errors.As(err, &se))
+	s.Require().True(model.IsTaskNotFound(se))
 
 	// Delete a deleted task
 	t1 := model.Task{Name: "user name 1", Content: "content text 1"}
@@ -213,10 +215,11 @@ func (s *INT_TaskTestSuite) Test_DeleteTask_TaskNotFound() {
 	s.Require().Empty(err)
 
 	err = s.taskRepo.Delete(s.context, 1)
-	s.Require().EqualError(err, "error: code = 404 reason = TASK_NOT_FOUND message = task has been logically deleted metadata = map[] cause = <nil>")
+	s.Require().True(errors.As(err, &se))
+	s.Require().True(model.IsTaskNotFound(se))
 }
 
-func (s *INT_TaskTestSuite) Test_ListTask() {
+func (s *DataSourceTestSuite) Test_ListTask() {
 
 	// Add first task
 	at := model.Task{Name: "user 1", Content: "content text 1"}
