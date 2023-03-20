@@ -46,3 +46,15 @@ func IsTaskCreationError(err error) bool {
 func ErrorTaskCreationError(format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorReason_TASK_CREATION_ERROR.String(), fmt.Sprintf(format, args...))
 }
+
+func IsTaskDbTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_TASK_DB_TIMEOUT.String() && e.Code == 500
+}
+
+func ErrorTaskDbTimeout(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_TASK_DB_TIMEOUT.String(), fmt.Sprintf(format, args...))
+}
