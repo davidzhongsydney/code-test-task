@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -23,6 +20,7 @@ import (
 	"qantas.com/task/internal/service"
 	"qantas.com/task/mocks"
 	"qantas.com/task/model"
+	"qantas.com/task/utils"
 )
 
 func TestHTTPHandler(t *testing.T) {
@@ -69,7 +67,7 @@ func TestHTTPHandler(t *testing.T) {
 				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1679287443, Nanos: 186685200}}},
 			callMethod:     "CreateTaskHTTPHandler",
 			httpMethod:     "POST",
-			expectedOutput: "{\"taskID\":2,\"name\":\"user\",\"content\":\"content\",\"createdAt\":{\"seconds\":1679287443,\"nanos\":186685200}}\n",
+			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"user\",\"content\":\"content\",\"createdAt\":{\"seconds\":1679287443,\"nanos\":186685200}}}\n",
 		},
 		{
 			description:     "create task failed - creation error",
@@ -181,12 +179,13 @@ func TestHTTPHandler(t *testing.T) {
 		}
 
 		taskUseCase := biz.NewTaskUsecase(&taskRepoMock, logger)
-		taskService := service.NewTaskService(taskUseCase)
+		taskService := service.NewTaskService(taskUseCase, logger)
 
 		// Set up router
 		r := chi.NewRouter()
 
-		httpHandler := server.TasksHTTPHandler{TaskSvc: taskService, Ctx: context}
+		// httpHandler := server.TasksHTTPHandler{TaskSvc: taskService, Ctx: context}
+		httpHandler := server.NewTaskHTTPHandler(taskService, logger, context)
 
 		r.Get("/tasks", httpHandler.ListTasksHTTPHandler()) // GET /tasks - Get a list of tasks.
 		r.Route("/task", func(r chi.Router) {
@@ -203,39 +202,16 @@ func TestHTTPHandler(t *testing.T) {
 
 		switch scenario.callMethod {
 		case "GetTaskByIdHTTPHandler", "DeleteTaskByIdHTTPHandler", "ListTasksHTTPHandler":
-			_, resp = testRequest(t, ts, scenario.httpMethod, scenario.url, nil)
+			_, resp = utils.TestRequest(t, ts, scenario.httpMethod, scenario.url, nil)
 		case "CreateTaskHTTPHandler", "UpdateTaskByIdHTTPHandler":
 			byteArray, err := json.Marshal(*scenario.mockInputTask)
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, resp = testRequest(t, ts, scenario.httpMethod, scenario.url, bytes.NewBuffer(byteArray))
+			_, resp = utils.TestRequest(t, ts, scenario.httpMethod, scenario.url, bytes.NewBuffer(byteArray))
 		}
 
 		// Verify response
 		requires.Equal(scenario.expectedOutput, resp)
 	}
-}
-
-func testRequest(t *testing.T, ts *httptest.Server, method, path string, body io.Reader) (*http.Response, string) {
-	req, err := http.NewRequest(method, ts.URL+path, body)
-	if err != nil {
-		t.Fatal(err)
-		return nil, ""
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-		return nil, ""
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-		return nil, ""
-	}
-	defer resp.Body.Close()
-
-	return resp, string(respBody)
 }

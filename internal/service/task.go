@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/go-kratos/kratos/v2/log"
+
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/model"
 )
@@ -11,7 +13,7 @@ type TaskService struct {
 	uc *biz.TaskUsecase
 }
 
-func NewTaskService(uc *biz.TaskUsecase) *TaskService {
+func NewTaskService(uc *biz.TaskUsecase, logger log.Logger) *TaskService {
 	return &TaskService{uc: uc}
 }
 
@@ -53,4 +55,8 @@ func (t *TaskService) DeleteTaskByID(ctx context.Context, id uint64) error {
 		return err
 	}
 	return nil
+}
+
+func (t *TaskService) GetTaskUsecase() *biz.TaskUsecase {
+	return t.uc
 }

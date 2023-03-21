@@ -63,3 +63,8 @@ func (uc *TaskUsecase) ListTasks(ctx context.Context) ([]model.T_Task, error) {
 	uc.log.WithContext(ctx).Infof("TaskUsecase: ListTasks")
 	return uc.repo.List(ctx)
 }
+
+func (uc *TaskUsecase) ClearTasks(ctx context.Context) error {
+	uc.log.WithContext(ctx).Infof("ClearTasks")
+	return uc.repo.Empty(ctx)
+}

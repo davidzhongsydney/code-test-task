@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -41,11 +42,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(bc.Server.Http.Timeout)
-
 	logger := log.With(log.NewStdLogger(os.Stdout))
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, context.Background())
 	if err != nil {
 		panic(err)
 	}

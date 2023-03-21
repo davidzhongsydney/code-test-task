@@ -9,4 +9,4 @@ type Server interface {
 }
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewHTTPServer)
+var ProviderSet = wire.NewSet(NewHTTPServer, NewTaskHTTPHandler)

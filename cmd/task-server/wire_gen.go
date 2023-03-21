@@ -7,6 +7,7 @@
 package main
 
 import (
+	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/internal/conf"
@@ -17,15 +18,16 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (server.Server, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, ctx context.Context) (server.Server, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	taskRepo := data.NewTaskRepo(dataData, logger)
 	taskUsecase := biz.NewTaskUsecase(taskRepo, logger)
-	taskService := service.NewTaskService(taskUsecase)
-	serverServer := server.NewHTTPServer(confServer, taskService, logger)
+	taskService := service.NewTaskService(taskUsecase, logger)
+	iTaskHTTPHandler := server.NewTaskHTTPHandler(taskService, logger, ctx)
+	serverServer := server.NewHTTPServer(confServer, logger, iTaskHTTPHandler)
 	return serverServer, func() {
 		cleanup()
 	}, nil

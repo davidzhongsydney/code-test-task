@@ -159,7 +159,7 @@ func TestTaskService(t *testing.T) {
 			}
 
 			taskUseCase := biz.NewTaskUsecase(&taskRepoMock, logger)
-			taskService := service.NewTaskService(taskUseCase)
+			taskService := service.NewTaskService(taskUseCase, logger)
 
 			var err error
 			var responseTask *model.T_Task

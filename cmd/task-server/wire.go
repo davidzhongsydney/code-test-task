@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"qantas.com/task/internal/biz"
 	conf "qantas.com/task/internal/conf"
@@ -14,6 +15,6 @@ import (
 	"github.com/google/wire"
 )
 
-func wireApp(*conf.Server, *conf.Data, log.Logger) (server.Server, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, ctx context.Context) (server.Server, func(), error) {
 	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet))
 }
