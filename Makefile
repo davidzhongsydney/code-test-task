@@ -8,16 +8,14 @@ ifeq ($(GOHOSTOS), windows)
 	#Git_Bash= $(subst cmd\,bin\bash.exe,$(dir $(shell where git)))
 	Git_Bash=$(subst \,/,$(subst cmd\,bin\bash.exe,$(dir $(shell where git))))
 	INTERNAL_PROTO_FILES=$(shell $(Git_Bash) -c "find internal -name *.proto")
-	API_PROTO_FILES=$(shell $(Git_Bash) -c "find api -name *.proto")
 	MODEL_PROTO_FILES=$(shell $(Git_Bash) -c "find model -name *.proto")
 else
 	INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
-	API_PROTO_FILES=$(shell find api -name *.proto)
 	MODEL_PROTO_FILES=$(shell find model -name *.proto)
 endif
 
 .PHONY: init
-# init env
+# download and update dependencies
 init:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
@@ -26,16 +24,16 @@ init:
 	go install github.com/go-kratos/kratos/cmd/protoc-gen-go-errors/v2@latest
 	go install github.com/google/wire/cmd/wire@latest
 
-.PHONY: config
-# generate internal config proto
-config:
+.PHONY: internal
+# generate files from internal folder by proto file (includes config)
+internal:
 	protoc --proto_path=./internal \
 	       --proto_path=./third_party \
  	       --go_out=paths=source_relative:./internal \
 	       $(INTERNAL_PROTO_FILES)
 
 .PHONY: model
-# generate model proto
+# generate files from model folder by proto file
 model:
 	protoc --proto_path=./model \
 	       --proto_path=./third_party \
@@ -44,13 +42,13 @@ model:
 	       $(MODEL_PROTO_FILES)
 
 .PHONY: wire
-# connecting components using dependency injection
+# connect components using google wire
 wire:
 	cd cmd/task-server;  \
 	go run github.com/google/wire/cmd/wire
 
 .PHONY: build
-# build
+# build executable file under ./bin/
 build:
 	mkdir -p bin/; \
 	go build -o ./bin/ ./...
@@ -65,7 +63,7 @@ generate:
 .PHONY: all
 # generate all
 all:
-	make config;
+	make internal;
 	make model;
 	make generate;
 	make build;

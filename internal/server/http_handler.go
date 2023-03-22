@@ -63,7 +63,7 @@ func (h TasksHTTPHandler) GetTaskByIdHTTPHandler() http.HandlerFunc {
 			return
 		}
 
-		json.NewEncoder(w).Encode(encoder.FromResponse(result))
+		json.NewEncoder(w).Encode(encoder.FromResponse(*result))
 	}
 	return fn
 }

@@ -18,17 +18,17 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, ctx context.Context) (server.Server, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, ctx context.Context) (server.IServer, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	taskRepo := data.NewTaskRepo(dataData, logger)
-	taskUsecase := biz.NewTaskUsecase(taskRepo, logger)
+	iTaskRepo := data.NewTaskRepo(dataData, logger)
+	taskUsecase := biz.NewTaskUsecase(iTaskRepo, logger)
 	taskService := service.NewTaskService(taskUsecase, logger)
 	iTaskHTTPHandler := server.NewTaskHTTPHandler(taskService, logger, ctx)
-	serverServer := server.NewHTTPServer(confServer, logger, iTaskHTTPHandler)
-	return serverServer, func() {
+	iServer := server.NewHTTPServer(confServer, logger, iTaskHTTPHandler)
+	return iServer, func() {
 		cleanup()
 	}, nil
 }

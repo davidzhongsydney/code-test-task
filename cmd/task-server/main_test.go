@@ -12,7 +12,6 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/suite"
 	"qantas.com/task/internal/biz"
 	conf "qantas.com/task/internal/conf"
@@ -21,6 +20,20 @@ import (
 	"qantas.com/task/model"
 	"qantas.com/task/utils"
 )
+
+type _HTTPSuccess_Task struct {
+	Code int          `json:"code,omitempty"`
+	Data model.T_Task `json:"data,omitempty"`
+}
+
+type _HTTPSuccess_Tasks struct {
+	Code int            `json:"code,omitempty"`
+	Data []model.T_Task `json:"data,omitempty"`
+}
+
+// type _HTTPSuccess struct {
+// 	Code int `json:"code,omitempty"`
+// }
 
 func (s *IntegrationTestSuite) SetupSuite() {
 	c := config.New(
@@ -76,23 +89,9 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(IntegrationTestSuite))
 }
 
-type _HTTPSuccess_Task struct {
-	Code int          `json:"code,omitempty"`
-	Data model.T_Task `json:"data,omitempty"`
-}
-
-type _HTTPSuccess_Tasks struct {
-	Code int            `json:"code,omitempty"`
-	Data []model.T_Task `json:"data,omitempty"`
-}
-
-type _HTTPSuccess struct {
-	Code int `json:"code,omitempty"`
-}
-
 func (s *IntegrationTestSuite) Test_CreateTask_Success() {
 	// Create a task "POST", "/task"
-	t := model.Task{Name: "user1", Content: "content2"}
+	t := model.Task{Name: "user1", Content: "content1"}
 	taskJson, err := json.Marshal(t)
 	s.Require().Nil(err)
 
@@ -106,16 +105,15 @@ func (s *IntegrationTestSuite) Test_CreateTask_Success() {
 	s.Require().Nil(err)
 
 	// Verify the output
-	creationTime := rt.Data.CreatedAt.AsTime()
-	var emptyTimeStamp *timestamp.Timestamp
+	creationTime := rt.Data.CreatedAt
 
 	s.Require().Equal(200, rt.Code)
 	s.Require().True((creationTime.After(startTime) && creationTime.Before(endTime) || creationTime.Equal(startTime) || creationTime.Equal(endTime)))
-	s.Require().Equal(emptyTimeStamp, rt.Data.UpdatedAt)
-	s.Require().Equal(emptyTimeStamp, rt.Data.DeletedAt)
+	s.Require().Nil(rt.Data.UpdatedAt)
+	s.Require().Nil(rt.Data.DeletedAt)
 	s.Require().Equal(uint64(1), rt.Data.TaskID)
 	s.Require().Equal("user1", rt.Data.Name)
-	s.Require().Equal("content2", rt.Data.Content)
+	s.Require().Equal("content1", rt.Data.Content)
 }
 
 func (s *IntegrationTestSuite) Test_GetTask_Success() {
@@ -186,8 +184,7 @@ func (s *IntegrationTestSuite) Test_UpdateTask_Success() {
 	s.Require().Nil(err)
 
 	// Verify the updated task
-	var emptyTimeStamp *timestamp.Timestamp
-	updateTime := rt.Data.UpdatedAt.AsTime()
+	updateTime := rt.Data.UpdatedAt
 
 	s.Require().Equal(200, rt.Code)
 	s.Require().Equal(ct.Data.TaskID, rt.Data.TaskID)
@@ -195,11 +192,10 @@ func (s *IntegrationTestSuite) Test_UpdateTask_Success() {
 	s.Require().Equal("content2", rt.Data.Content)
 	s.Require().Equal(ct.Data.CreatedAt, rt.Data.CreatedAt)
 	s.Require().True((updateTime.After(startTime) && updateTime.Before(endTime) || updateTime.Equal(startTime) || updateTime.Equal(endTime)))
-	s.Require().Equal(emptyTimeStamp, rt.Data.DeletedAt)
+	s.Require().Nil(rt.Data.DeletedAt)
 }
 
 func (s *IntegrationTestSuite) Test_UpdateTask_TaskNotFound() {
-
 	// Update a task "PUT", "/task"
 	t := model.Task{TaskID: 1, Name: "user2", Content: "content2"}
 	taskJson, err := json.Marshal(t)

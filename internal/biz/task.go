@@ -8,7 +8,7 @@ import (
 	"qantas.com/task/model"
 )
 
-type TaskRepo interface {
+type ITaskRepo interface {
 	Create(context.Context, *model.Task) (*model.T_Task, error)
 	Get(context.Context, uint64) (*model.T_Task, error)
 	Update(context.Context, *model.Task) (*model.T_Task, error)
@@ -18,11 +18,11 @@ type TaskRepo interface {
 }
 
 type TaskUsecase struct {
-	repo TaskRepo
+	repo ITaskRepo
 	log  *log.Helper
 }
 
-func NewTaskUsecase(repo TaskRepo, logger log.Logger) *TaskUsecase {
+func NewTaskUsecase(repo ITaskRepo, logger log.Logger) *TaskUsecase {
 	return &TaskUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 

@@ -2,10 +2,10 @@ package data
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/exp/maps"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/internal/encoder"
 	"qantas.com/task/model"
@@ -18,7 +18,7 @@ type taskRepo struct {
 	log   *log.Helper
 }
 
-func NewTaskRepo(data *Data, logger log.Logger) biz.TaskRepo {
+func NewTaskRepo(data *Data, logger log.Logger) biz.ITaskRepo {
 	return &taskRepo{
 		data: data,
 		log:  log.NewHelper(logger),
@@ -55,7 +55,8 @@ func (r *taskRepo) Create(ctx context.Context, task *model.Task) (*model.T_Task,
 	r.index++
 	task.TaskID = r.index
 
-	newEntry := model.T_Task{Task: *task, T_Internal: model.T_Internal{CreatedAt: timestamppb.Now()}}
+	nt := time.Now()
+	newEntry := model.T_Task{Task: *task, T_Internal: model.T_Internal{CreatedAt: &nt}}
 
 	r.data.tasks[task.TaskID] = newEntry
 	return &newEntry, nil
@@ -76,7 +77,8 @@ func (r *taskRepo) Update(ctx context.Context, task *model.Task) (*model.T_Task,
 	}
 
 	val.Task = *task
-	val.T_Internal.UpdatedAt = timestamppb.Now()
+	nt := time.Now()
+	val.T_Internal.UpdatedAt = &nt
 
 	r.data.tasks[task.TaskID] = val
 
@@ -96,7 +98,8 @@ func (r *taskRepo) Delete(ctx context.Context, id uint64) error {
 		return model.ErrorTaskNotFound(string(encoder.TASK_DELETED))
 	}
 
-	val.DeletedAt = timestamppb.Now()
+	nt := time.Now()
+	val.DeletedAt = &nt
 	r.data.tasks[id] = val
 
 	return nil

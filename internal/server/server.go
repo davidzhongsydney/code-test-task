@@ -4,7 +4,7 @@ import (
 	"github.com/google/wire"
 )
 
-type Server interface {
+type IServer interface {
 	Run() error
 }
 

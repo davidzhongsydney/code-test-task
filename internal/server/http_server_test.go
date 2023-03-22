@@ -7,13 +7,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/internal/encoder"
 	"qantas.com/task/internal/server"
@@ -22,6 +22,10 @@ import (
 	"qantas.com/task/model"
 	"qantas.com/task/utils"
 )
+
+var timeLayout = "2006-01-02T15:04:05.000Z"
+var time1, _ = time.Parse(timeLayout, "2014-11-12T11:45:26.371Z")
+var time2, _ = time.Parse(timeLayout, "2015-11-12T11:45:26.371Z")
 
 func TestHTTPHandler(t *testing.T) {
 
@@ -43,11 +47,11 @@ func TestHTTPHandler(t *testing.T) {
 			description: "get task by id success",
 			mockMethod:  "Get",
 			url:         "/task/1",
-			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "user", Content: "content"},
-				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1679287443, Nanos: 186685200}}},
+			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "david", Content: "content text"},
+				T_Internal: model.T_Internal{CreatedAt: &time1}},
 			callMethod:     "GetTaskByIdHTTPHandler",
 			httpMethod:     "GET",
-			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"user\",\"content\":\"content\",\"createdAt\":{\"seconds\":1679287443,\"nanos\":186685200}}}\n",
+			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"david\",\"content\":\"content text\",\"createdAt\":\"2014-11-12T11:45:26.371Z\"}}\n",
 		},
 		{
 			description:     "get task by id failed - task not found",
@@ -62,12 +66,12 @@ func TestHTTPHandler(t *testing.T) {
 			description:   "create task success",
 			mockMethod:    "Create",
 			url:           "/task",
-			mockInputTask: &model.Task{Name: "user", Content: "content"},
-			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "user", Content: "content"},
-				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1679287443, Nanos: 186685200}}},
+			mockInputTask: &model.Task{Name: "david", Content: "content text"},
+			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "david", Content: "content text"},
+				T_Internal: model.T_Internal{CreatedAt: &time1}},
 			callMethod:     "CreateTaskHTTPHandler",
 			httpMethod:     "POST",
-			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"user\",\"content\":\"content\",\"createdAt\":{\"seconds\":1679287443,\"nanos\":186685200}}}\n",
+			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"david\",\"content\":\"content text\",\"createdAt\":\"2014-11-12T11:45:26.371Z\"}}\n",
 		},
 		{
 			description:     "create task failed - creation error",
@@ -83,19 +87,18 @@ func TestHTTPHandler(t *testing.T) {
 			description:   "update task by id success",
 			mockMethod:    "Update",
 			url:           "/task",
-			mockInputTask: &model.Task{TaskID: 2, Name: "user", Content: "content"},
-			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "user1", Content: "content1"},
-				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1679287443, Nanos: 186685200},
-					UpdatedAt: &timestamppb.Timestamp{Seconds: 1779287443, Nanos: 186685200}}},
+			mockInputTask: &model.Task{TaskID: 2, Name: "david", Content: "content text"},
+			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "john", Content: "content text updated"},
+				T_Internal: model.T_Internal{CreatedAt: &time1, UpdatedAt: &time2}},
 			callMethod:     "UpdateTaskByIdHTTPHandler",
 			httpMethod:     "PUT",
-			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"user1\",\"content\":\"content1\",\"createdAt\":{\"seconds\":1679287443,\"nanos\":186685200},\"updatedAt\":{\"seconds\":1779287443,\"nanos\":186685200}}}\n",
+			expectedOutput: "{\"code\":200,\"data\":{\"taskID\":2,\"name\":\"john\",\"content\":\"content text updated\",\"createdAt\":\"2014-11-12T11:45:26.371Z\",\"updatedAt\":\"2015-11-12T11:45:26.371Z\"}}\n",
 		},
 		{
 			description:     "update task by id failed - task not found",
 			mockMethod:      "Update",
 			url:             "/task",
-			mockInputTask:   &model.Task{TaskID: 2, Name: "user", Content: "content"},
+			mockInputTask:   &model.Task{TaskID: 2, Name: "david", Content: "content text"},
 			mockReturnError: model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST)),
 			callMethod:      "UpdateTaskByIdHTTPHandler",
 			httpMethod:      "PUT",
@@ -105,7 +108,7 @@ func TestHTTPHandler(t *testing.T) {
 			description:     "update task by id failed - task id not specified",
 			mockMethod:      "Update",
 			url:             "/task",
-			mockInputTask:   &model.Task{Name: "user", Content: "content"},
+			mockInputTask:   &model.Task{Name: "david", Content: "content text"},
 			mockReturnError: model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST)),
 			callMethod:      "UpdateTaskByIdHTTPHandler",
 			httpMethod:      "PUT",
@@ -134,12 +137,12 @@ func TestHTTPHandler(t *testing.T) {
 			url:         "/tasks",
 			mockReturnTasks: []model.T_Task{
 				{Task: model.Task{TaskID: 1, Name: "user1", Content: "content1"},
-					T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1679287443, Nanos: 186685200}}},
+					T_Internal: model.T_Internal{CreatedAt: &time1}},
 				{Task: model.Task{TaskID: 2, Name: "user2", Content: "content2"},
-					T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1879287443, Nanos: 196685200}}}},
+					T_Internal: model.T_Internal{CreatedAt: &time2}}},
 			callMethod:     "ListTasksHTTPHandler",
 			httpMethod:     "GET",
-			expectedOutput: "{\"code\":200,\"data\":[{\"taskID\":1,\"name\":\"user1\",\"content\":\"content1\",\"createdAt\":{\"seconds\":1679287443,\"nanos\":186685200}},{\"taskID\":2,\"name\":\"user2\",\"content\":\"content2\",\"createdAt\":{\"seconds\":1879287443,\"nanos\":196685200}}]}\n",
+			expectedOutput: "{\"code\":200,\"data\":[{\"taskID\":1,\"name\":\"user1\",\"content\":\"content1\",\"createdAt\":\"2014-11-12T11:45:26.371Z\"},{\"taskID\":2,\"name\":\"user2\",\"content\":\"content2\",\"createdAt\":\"2015-11-12T11:45:26.371Z\"}]}\n",
 		},
 		{
 			description:     "list tasks failed - database timeout",
@@ -156,7 +159,7 @@ func TestHTTPHandler(t *testing.T) {
 		logger := log.With(log.NewStdLogger(os.Stdout))
 		taskRepoMock := mocks.TaskRepo{}
 
-		// Set up dabase mock
+		// Set up database method mock
 		switch scenario.callMethod {
 		case "CreateTaskHTTPHandler", "UpdateTaskByIdHTTPHandler", "GetTaskByIdHTTPHandler":
 			if scenario.mockReturnError != nil {
@@ -184,7 +187,6 @@ func TestHTTPHandler(t *testing.T) {
 		// Set up router
 		r := chi.NewRouter()
 
-		// httpHandler := server.TasksHTTPHandler{TaskSvc: taskService, Ctx: context}
 		httpHandler := server.NewTaskHTTPHandler(taskService, logger, context)
 
 		r.Get("/tasks", httpHandler.ListTasksHTTPHandler()) // GET /tasks - Get a list of tasks.

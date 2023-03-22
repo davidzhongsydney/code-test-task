@@ -15,6 +15,6 @@ import (
 	"github.com/google/wire"
 )
 
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, ctx context.Context) (server.Server, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, ctx context.Context) (server.IServer, func(), error) {
 	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet))
 }

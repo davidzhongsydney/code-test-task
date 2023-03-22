@@ -1,6 +1,8 @@
 package model
 
-import timestamp "github.com/golang/protobuf/ptypes/timestamp"
+import (
+	"time"
+)
 
 type T_Task struct {
 	Task
@@ -14,9 +16,9 @@ type Task struct {
 }
 
 type T_Internal struct {
-	CreatedAt *timestamp.Timestamp `json:"createdAt,omitempty"`
-	UpdatedAt *timestamp.Timestamp `json:"updatedAt,omitempty"`
-	DeletedAt *timestamp.Timestamp `json:"deletedAt,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }
 
 func (x *Task) GetTaskID() uint64 {
@@ -40,23 +42,23 @@ func (x *Task) GetContent() string {
 	return ""
 }
 
-func (x *T_Internal) GetCreatedAt() *timestamp.Timestamp {
+func (x *T_Internal) GetCreatedAt() *time.Time {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return nil
+	return &time.Time{}
 }
 
-func (x *T_Internal) GetUpdatedAt() *timestamp.Timestamp {
+func (x *T_Internal) GetUpdatedAt() *time.Time {
 	if x != nil {
 		return x.UpdatedAt
 	}
-	return nil
+	return &time.Time{}
 }
 
-func (x *T_Internal) GetDeletedAt() *timestamp.Timestamp {
+func (x *T_Internal) GetDeletedAt() *time.Time {
 	if x != nil {
 		return x.DeletedAt
 	}
-	return nil
+	return &time.Time{}
 }

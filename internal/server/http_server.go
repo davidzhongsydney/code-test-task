@@ -11,13 +11,21 @@ import (
 	"qantas.com/task/internal/service"
 )
 
+type ITaskHTTPHandler interface {
+	ListTasksHTTPHandler() http.HandlerFunc
+	CreateTaskHTTPHandler() http.HandlerFunc
+	GetTaskByIdHTTPHandler() http.HandlerFunc
+	UpdateTaskByIdHTTPHandler() http.HandlerFunc
+	DeleteTaskByIdHTTPHandler() http.HandlerFunc
+}
+
 type HTTPServer struct {
 	router          *chi.Mux
 	conf            *conf.Server
 	taskHttpHandler ITaskHTTPHandler
 }
 
-func NewHTTPServer(c *conf.Server, logger log.Logger, httpHandler ITaskHTTPHandler) Server {
+func NewHTTPServer(c *conf.Server, logger log.Logger, httpHandler ITaskHTTPHandler) IServer {
 
 	r := chi.NewRouter()
 
@@ -26,11 +34,7 @@ func NewHTTPServer(c *conf.Server, logger log.Logger, httpHandler ITaskHTTPHandl
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
 	r.Use(middleware.Timeout(c.Http.Timeout.AsDuration()))
-
-	// ctx := context.Background()
-	// httpHandler := TasksHTTPHandler{TaskSvc: taskSvc, Ctx: ctx}
 
 	r.Get("/tasks", httpHandler.ListTasksHTTPHandler()) // GET /tasks - Get a list of tasks.
 	r.Route("/task", func(r chi.Router) {
@@ -62,12 +66,4 @@ func (s *HTTPServer) GetRouter() *chi.Mux {
 
 func (s *HTTPServer) GetHttpHandler() ITaskHTTPHandler {
 	return s.taskHttpHandler
-}
-
-type ITaskHTTPHandler interface {
-	ListTasksHTTPHandler() http.HandlerFunc
-	CreateTaskHTTPHandler() http.HandlerFunc
-	GetTaskByIdHTTPHandler() http.HandlerFunc
-	UpdateTaskByIdHTTPHandler() http.HandlerFunc
-	DeleteTaskByIdHTTPHandler() http.HandlerFunc
 }

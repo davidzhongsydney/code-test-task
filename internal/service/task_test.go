@@ -4,18 +4,22 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	errors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"qantas.com/task/internal/biz"
 	"qantas.com/task/internal/encoder"
 	"qantas.com/task/internal/service"
 	"qantas.com/task/mocks"
 	"qantas.com/task/model"
 )
+
+var timeLayout = "2006-01-02T15:04:05.000Z"
+var time1, _ = time.Parse(timeLayout, "2014-11-12T11:45:26.371Z")
+var time2, _ = time.Parse(timeLayout, "2015-11-12T11:45:26.371Z")
 
 func TestTaskService(t *testing.T) {
 	type testCases struct {
@@ -37,7 +41,7 @@ func TestTaskService(t *testing.T) {
 			callMethod:    "CreateTask",
 			mockInputTask: &model.Task{TaskID: 2, Name: "user", Content: "content"},
 			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "user", Content: "content"},
-				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1879287443, Nanos: 196685200}}},
+				T_Internal: model.T_Internal{CreatedAt: &time1}},
 		},
 		{
 			description:     "task creation failed - creation error",
@@ -53,8 +57,7 @@ func TestTaskService(t *testing.T) {
 			callMethod:    "UpdateTaskByID",
 			mockInputTask: &model.Task{TaskID: 2, Name: "user", Content: "content"},
 			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "user", Content: "content"},
-				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1879287443, Nanos: 196685200},
-					UpdatedAt: &timestamppb.Timestamp{Seconds: 1979287443, Nanos: 20685200}}},
+				T_Internal: model.T_Internal{CreatedAt: &time1}},
 		},
 		{
 			description:     "update task by id failed - task not found",
@@ -65,12 +68,20 @@ func TestTaskService(t *testing.T) {
 			expectedError:   model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST)),
 		},
 		{
+			description:     "update task by id failed - task id not specified",
+			mockMethod:      "Update",
+			callMethod:      "UpdateTaskByID",
+			mockInputTask:   &model.Task{Name: "user", Content: "content"},
+			mockReturnError: model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST)),
+			expectedError:   model.ErrorTaskIdUnspecified(string(encoder.TASK_ID_NOT_SPECIFIED)),
+		},
+		{
 			description:      "get task by id success",
 			mockMethod:       "Get",
 			callMethod:       "GetTaskByID",
 			mockInputInteger: 2,
 			mockReturnTask: &model.T_Task{Task: model.Task{TaskID: 2, Name: "user", Content: "content"},
-				T_Internal: model.T_Internal{CreatedAt: &timestamppb.Timestamp{Seconds: 1879287443, Nanos: 196685200}}},
+				T_Internal: model.T_Internal{CreatedAt: &time1}},
 		},
 		{
 			description:      "get task by id failed - task not found",
@@ -103,6 +114,14 @@ func TestTaskService(t *testing.T) {
 			expectedError:    model.ErrorTaskNotFound(string(encoder.TASK_NOT_EXIST)),
 		},
 		{
+			description:      "delete task by id failed - task has been logically deleted",
+			mockMethod:       "Delete",
+			callMethod:       "DeleteTaskByID",
+			mockInputInteger: 2,
+			mockReturnError:  model.ErrorTaskNotFound(string(encoder.TASK_DELETED)),
+			expectedError:    model.ErrorTaskNotFound(string(encoder.TASK_DELETED)),
+		},
+		{
 			description:      "delete task by id failed - id not specified",
 			mockMethod:       "Delete",
 			callMethod:       "DeleteTaskByID",
@@ -116,9 +135,9 @@ func TestTaskService(t *testing.T) {
 			callMethod:  "ListTasks",
 			mockReturnTasks: []model.T_Task{
 				{Task: model.Task{TaskID: 1, Name: "user1", Content: "content1"},
-					T_Internal: model.T_Internal{CreatedAt: timestamppb.Now()}},
+					T_Internal: model.T_Internal{CreatedAt: &time1}},
 				{Task: model.Task{TaskID: 2, Name: "user2", Content: "content2"},
-					T_Internal: model.T_Internal{CreatedAt: timestamppb.Now()}}},
+					T_Internal: model.T_Internal{CreatedAt: &time2}}},
 		},
 		{
 			description:     "List tasks failed - database timeout",
