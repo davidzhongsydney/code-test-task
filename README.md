@@ -1,6 +1,6 @@
 # Code Test Challenge
 
-## Requirement
+## Requirements
 
 You are required to build a microservice managing Tasks with the API endpoints for:
 
