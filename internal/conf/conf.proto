@@ -1,0 +1,23 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "qantas.com/task/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+}
+
+message Server {
+  message HTTP {
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+
+  HTTP http = 1;
+}
+
+message Data {
+}

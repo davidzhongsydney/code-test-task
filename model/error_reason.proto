@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package api.kratos.v1;
+import "errors/errors.proto";
+
+option go_package = "qantas.com/task/model;model";
+
+enum ErrorReason {
+  option (errors.default_code) = 500;
+  TASK_ID_UNSPECIFIED = 0 [(errors.code) = 400];
+  TASK_NOT_FOUND = 1 [(errors.code) = 404];
+  TASK_CREATION_ERROR = 2 [(errors.code) = 500];
+  TASK_DB_TIMEOUT = 3 [(errors.code) = 500];
+}
